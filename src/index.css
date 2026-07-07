@@ -488,14 +488,114 @@ html, body, #root {
 .s-stat-val.hi { color: var(--yellow); }
 
 /* ============================================================
-   HABIT GRID (calendar — WHITE CELLS)
+   HABIT GRID (calendar — scrollable, fits content width)
    ============================================================ */
 .grid-area {
-  flex: 1;
+  flex: 0 1 auto;    /* don't grow past table content width */
   overflow: auto;
   background: var(--dark);
-  min-width: 0;
+  min-width: 200px;
 }
+
+/* ============================================================
+   STREAK PANEL (fills the gap between grid and analysis)
+   ============================================================ */
+.streak-panel {
+  flex: 1;
+  min-width: 150px;
+  max-width: 240px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--dark-2);
+  flex-shrink: 0;
+}
+
+.streak-hdr {
+  display: flex;
+  align-items: center;
+  background: var(--dark-4);
+  border-bottom: 1px solid var(--border);
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+
+.sp-col {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.streak-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.streak-row {
+  display: flex;
+  align-items: center;
+  height: var(--row-h);
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+}
+
+.streak-row .sp-col {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1px;
+  padding: 1px 2px;
+}
+
+.streak-row .sp-fire-col   { color: var(--text-dim); }
+.streak-row .sp-fire-col.sp-active { color: #ff8c42; }
+.streak-row .sp-best-col   { color: var(--text-dim); }
+.streak-row .sp-best-col.sp-gold   { color: #ffd700; }
+
+.sp-icon { font-size: 9px; line-height: 1; }
+.sp-none { color: var(--text-dim); opacity: 0.4; font-size: 11px; }
+
+/* Week column */
+.sp-wk-full { color: #4caf50; font-weight: 700; font-size: 10px; }
+.sp-wk-part { color: var(--text-white); font-size: 10px; }
+.sp-wk-zero { color: var(--text-dim); font-size: 10px; }
+
+/* Mini day dots */
+.sp-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.sp-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  flex-shrink: 0;
+}
+
+.sp-dot.done {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
 
 .habit-table {
   border-collapse: collapse;

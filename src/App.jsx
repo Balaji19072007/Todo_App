@@ -442,7 +442,109 @@ function HabitGrid({ habits, logs, year, month, onToggle }) {
   )
 }
 
+/* ─────────────── STREAK PANEL ─────────────── */
+function StreakPanel({ habits, logs, year, month }) {
+  const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
+  const daysInMonth = new Date(year, month, 0).getDate()
+
+  const streaks = useMemo(() => {
+    // Day of week offset for Mon-based weeks
+    const dow = today.getDay()
+    const weekStartOffset = dow === 0 ? 6 : dow - 1
+
+    return habits.map(h => {
+      // Current streak: consecutive days backwards from today (within month)
+      let currentStreak = 0
+      for (let i = 0; i < daysInMonth; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() - i)
+        const ds = d.toISOString().slice(0, 10)
+        const [y, m] = ds.split('-').map(Number)
+        if (y !== year || m !== month) break
+        if (!logs[`${h.id}_${ds}`]) break
+        currentStreak++
+      }
+
+      // Best streak in month
+      let bestStreak = 0, cur = 0
+      for (let d = 1; d <= daysInMonth; d++) {
+        const ds = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+        if (logs[`${h.id}_${ds}`]) { cur++; bestStreak = Math.max(bestStreak, cur) }
+        else cur = 0
+      }
+
+      // This week (Mon–today)
+      let weekDone = 0
+      for (let i = 0; i <= weekStartOffset; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() - i)
+        const ds = d.toISOString().slice(0, 10)
+        if (logs[`${h.id}_${ds}`]) weekDone++
+      }
+      const weekTotal = weekStartOffset + 1
+
+      return { h, currentStreak, bestStreak, weekDone, weekTotal }
+    })
+  }, [habits, logs, year, month, todayStr])
+
+  return (
+    <div className="streak-panel">
+      <div className="panel-title">Streaks &amp; Weekly</div>
+
+      {/* Column headers */}
+      <div className="streak-hdr">
+        <span className="sp-col sp-fire-col" title="Current streak">🔥 Streak</span>
+        <span className="sp-col sp-best-col" title="Best streak this month">🏆 Best</span>
+        <span className="sp-col sp-week-col" title="Days done this week">📅 Week</span>
+      </div>
+
+      {/* Rows — aligned with habit rows */}
+      <div className="streak-scroll">
+        {habits.length === 0 ? (
+          <div className="empty-hint">
+            <div className="icon">🔥</div>
+            <div className="msg">No habits yet</div>
+          </div>
+        ) : streaks.map(({ h, currentStreak, bestStreak, weekDone, weekTotal }) => (
+          <div key={h.id} className="streak-row">
+            <div className={`sp-col sp-fire-col${currentStreak > 0 ? ' sp-active' : ''}`}>
+              {currentStreak > 0
+                ? <><span className="sp-icon">🔥</span>{currentStreak}d</>
+                : <span className="sp-none">—</span>}
+            </div>
+            <div className={`sp-col sp-best-col${bestStreak > 0 ? ' sp-gold' : ''}`}>
+              {bestStreak > 0
+                ? <><span className="sp-icon">🏆</span>{bestStreak}d</>
+                : <span className="sp-none">—</span>}
+            </div>
+            <div className="sp-col sp-week-col">
+              <span className={
+                weekDone === weekTotal ? 'sp-wk-full' :
+                weekDone > 0          ? 'sp-wk-part' : 'sp-wk-zero'
+              }>
+                {weekDone}/{weekTotal}
+              </span>
+              {/* Mini dots for each day of the week */}
+              <div className="sp-dots">
+                {Array.from({ length: weekTotal }, (_, i) => {
+                  const d = new Date(today)
+                  d.setDate(today.getDate() - (weekTotal - 1 - i))
+                  const ds = d.toISOString().slice(0, 10)
+                  const done = !!logs[`${h.id}_${ds}`]
+                  return <span key={i} className={`sp-dot${done ? ' done' : ''}`} />
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ─────────────── ANALYSIS PANEL ─────────────── */
+
 function AnalysisPanel({ habits, logs, year, month }) {
   const daysInMonth = new Date(year, month, 0).getDate()
 
@@ -709,6 +811,7 @@ export default function App() {
         ) : (
           <HabitGrid habits={habits} logs={logs} year={year} month={month} onToggle={toggleLog} />
         )}
+        <StreakPanel habits={habits} logs={logs} year={year} month={month} />
         <AnalysisPanel habits={habits} logs={logs} year={year} month={month} />
       </div>
 
