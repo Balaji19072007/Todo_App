@@ -133,24 +133,9 @@ function KPIBox({ habits, logs, year, month }) {
 }
 
 /* ─────────────── OVERALL STATS DONUT ─────────────── */
-const centerPlugin = {
-  id: 'center',
-  beforeDraw(chart) {
-    const { width, height, ctx } = chart
-    const pct = chart.config._pct || 0
-    ctx.restore()
-    const fs = Math.max(12, height / 5.5)
-    ctx.font = `700 ${fs}px Inter, sans-serif`
-    ctx.fillStyle = '#ffffff'
-    ctx.textBaseline = 'middle'
-    const text = `${pct}%`
-    ctx.fillText(text, (width - ctx.measureText(text).width) / 2, height / 2)
-    ctx.save()
-  }
-}
-
 function OverallStats({ habits, logs, year, month }) {
   const daysInMonth = new Date(year, month, 0).getDate()
+
   const pct = useMemo(() => {
     const goal = habits.length * daysInMonth
     if (!goal) return 0
@@ -164,22 +149,38 @@ function OverallStats({ habits, logs, year, month }) {
     return Math.round((done / goal) * 100)
   }, [habits, logs, year, month, daysInMonth])
 
+  // Plugin uses closure — reads pct directly, no chart.config hacks
+  const centerTextPlugin = useMemo(() => ({
+    id: 'centerText',
+    beforeDraw(chart) {
+      const { width, height, ctx } = chart
+      ctx.restore()
+      const fs = Math.max(14, Math.min(height / 4.5, 22))
+      ctx.font = `700 ${fs}px Inter, sans-serif`
+      ctx.fillStyle = '#ffffff'
+      ctx.textBaseline = 'middle'
+      const text = `${pct}%`
+      const tw = ctx.measureText(text).width
+      ctx.fillText(text, (width - tw) / 2, height / 2)
+      ctx.save()
+    }
+  }), [pct])
+
   const data = {
-    _pct: pct,
-    datasets: [{ data: [pct, 100 - pct], backgroundColor: ['#cccccc','#2a2a2a'], borderWidth: 0, hoverOffset: 0 }]
-  }
-  const opts = {
-    responsive: true, maintainAspectRatio: false, cutout: '70%',
-    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    datasets: [{
+      data: [pct, Math.max(0, 100 - pct)],
+      backgroundColor: ['#cccccc', '#2a2a2a'],
+      borderWidth: 0,
+      hoverOffset: 0
+    }]
   }
 
-  // Attach pct to chart config for plugin
-  const plugin = {
-    ...centerPlugin,
-    beforeDraw(chart) {
-      chart.config._pct = pct
-      centerPlugin.beforeDraw(chart)
-    }
+  const opts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    animation: { duration: 400 },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
   }
 
   return (
@@ -187,7 +188,7 @@ function OverallStats({ habits, logs, year, month }) {
       <div className="panel-title">Overall Stats</div>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
         <div style={{ width: 120, height: 120 }}>
-          <Doughnut data={data} options={opts} plugins={[plugin]} />
+          <Doughnut data={data} options={opts} plugins={[centerTextPlugin]} />
         </div>
       </div>
     </div>

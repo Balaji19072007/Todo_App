@@ -608,9 +608,9 @@ html, body, #root {
   opacity: 0.8;
 }
 
-/* Future boxes — very dim */
+/* Future boxes — slightly dim but still visible */
 .check-td.future-td .checkbox-sq {
-  opacity: 0.2;
+  opacity: 0.45;
 }
 
 /* Progress cell at end of grid row */
