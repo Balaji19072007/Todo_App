@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/Todo_App/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Habit Game Tracker - Turn your life into a game. Track habits daily, visualize progress, and build consistency." />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="HabitTracker" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/Todo_App/manifest.json" />
+    <!-- Apple touch icon (iOS home screen) -->
+    <link rel="apple-touch-icon" href="/Todo_App/favicon.svg" />
+
     <title>Habit Game Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,5 +24,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Register Service Worker for PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/Todo_App/sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.warn('SW registration failed:', err))
+        })
+      }
+    </script>
   </body>
 </html>
