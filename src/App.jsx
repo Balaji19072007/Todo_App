@@ -720,6 +720,29 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // ── Scale entire app to fit any screen (desktop layout shown identically on mobile) ──
+  useEffect(() => {
+    const DESIGN_W = 1400   // design reference width in px
+    const el = document.getElementById('root')
+
+    const applyScale = () => {
+      if (!el) return
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      const scale = vw / DESIGN_W          // e.g. 390/1400 ≈ 0.278 on iPhone
+
+      el.style.transformOrigin = 'top left'
+      el.style.transform      = `scale(${scale})`
+      el.style.width          = `${DESIGN_W}px`
+      el.style.height         = `${Math.ceil(vh / scale)}px`
+      el.style.overflow       = 'hidden'
+    }
+
+    applyScale()
+    window.addEventListener('resize', applyScale)
+    return () => window.removeEventListener('resize', applyScale)
+  }, [])
+
   const toast = (msg, type = 'ok') => {
     const id = Date.now()
     setToasts(p => [...p, { id, msg, type }])
