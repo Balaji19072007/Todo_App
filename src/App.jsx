@@ -322,7 +322,8 @@ function HabitGrid({ habits, logs, year, month, onToggle }) {
     const ds = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`
     const dow = (firstDOW + i) % 7
     const wk = Math.floor((i + firstDOW) / 7)
-    return { d, ds, dow, wk, isToday: ds === todayStr, isFuture: ds > todayStr }
+    const isPast = ds < todayStr
+    return { d, ds, dow, wk, isToday: ds === todayStr, isFuture: ds > todayStr, isPast }
   }), [year, month, daysInMonth, firstDOW, todayStr])
 
   const weekGroups = useMemo(() => {
@@ -392,20 +393,33 @@ function HabitGrid({ habits, logs, year, month, onToggle }) {
                 }}>
                   {/* Empty — name is in sidebar, this is a placeholder */}
                 </td>
-                {/* Day cells — WHITE */}
+                {/* Day cells — DARK, only today is clickable */}
                 {days.map(d => {
                   const checked = !!logs[`${h.id}_${d.ds}`]
+                  // Only today can be toggled; past & future are read-only
+                  const canClick = d.isToday
+                  const cls = [
+                    'check-td',
+                    checked   ? 'checked'   : '',
+                    d.isToday ? 'today-td'  : '',
+                    d.isPast  ? 'past-td'   : '',
+                    d.isFuture? 'future-td' : ''
+                  ].filter(Boolean).join(' ')
                   return (
                     <td
                       key={d.d}
-                      className={`check-td${d.isFuture ? ' future-td' : ''}${d.isToday ? ' today-td' : ''}`}
-                      onClick={() => !d.isFuture && onToggle(h.id, d.ds, checked)}
+                      className={cls}
+                      onClick={() => canClick && onToggle(h.id, d.ds, checked)}
                       role="checkbox"
                       aria-checked={checked}
-                      tabIndex={d.isFuture ? -1 : 0}
-                      onKeyDown={e => (e.key===' '||e.key==='Enter') && !d.isFuture && onToggle(h.id, d.ds, checked)}
+                      aria-disabled={!canClick}
+                      tabIndex={canClick ? 0 : -1}
+                      onKeyDown={e => (e.key===' '||e.key==='Enter') && canClick && onToggle(h.id, d.ds, checked)}
+                      title={d.isToday ? 'Click to toggle' : d.isPast ? 'Past day (locked)' : 'Future day (locked)'}
                     >
-                      {checked ? '✓' : ''}
+                      <div className="checkbox-sq">
+                        {checked ? '✓' : ''}
+                      </div>
                     </td>
                   )
                 })}
